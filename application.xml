@@ -31,13 +31,7 @@
   </icon>
   <supportedProfiles>desktop</supportedProfiles>
   <description>这是个类似VertexHelper的工具, 感谢VertexHelper作者.
-Ver 1.0.2 
-- 增加了对 Mac 程序菜单的支持;
-
-Ver 1.0.3 
-- 修改了 Mac 程序菜单的Bug;
-- 增加锚点模式, 锚点模式使用时, 必须是一行一列;
-- 布局调整;</description>
+Mac 环境下仍然存在 Bugs. </description>
   <versionLabel>1.0.3</versionLabel>
   <copyright>Copyright 2013, Zhenyu Yao All rights reserved.</copyright>
   <fileTypes>
