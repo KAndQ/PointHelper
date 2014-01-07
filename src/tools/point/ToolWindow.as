@@ -72,7 +72,7 @@ package tools.point
 			m_pictureView.y += 32;
 			root.addChild(m_pictureView);
 			m_messageView.x = 6.18;
-			m_messageView.y += 400;
+			m_messageView.y += 600;
 			root.addChild(m_messageView);
 			
 			// 初始化各种中介者
@@ -88,7 +88,8 @@ package tools.point
 			}
 			else if (NativeApplication.supportsMenu)
 			{
-				NativeApplication.nativeApplication.menu = m_menu;
+				if (NativeApplication.nativeApplication.menu != m_menu)
+					NativeApplication.nativeApplication.menu = m_menu;
 			}
 			
 			this.visible = true;
@@ -107,6 +108,14 @@ package tools.point
 		public function onActivateHandler(evt : Event) : void
 		{
 			m_menuMediator.resetMenuEventListener();
+		}
+		
+		/**
+		 * 关闭窗口事件
+		 */
+		public function onClosingHandler(evt : Event) : void
+		{
+			
 		}
 
 		private var m_menu : ToolWindowMenu = null;

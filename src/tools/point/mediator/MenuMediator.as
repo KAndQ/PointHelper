@@ -1,5 +1,6 @@
 package tools.point.mediator 
 {
+	import flash.events.Event;
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
 	import tools.point.events.MenuEvent;
@@ -49,6 +50,20 @@ package tools.point.mediator
 			addEventListenerForMenu(MenuEvent.UNDO, onUndoHandler);
 			addEventListenerForMenu(MenuEvent.REDO, onRedoHandler);
 			addEventListenerForMenu(MenuEvent.ABOUT, onAboutHandler);
+		}
+		
+		/**
+		 * 取消侦听器
+		 */
+		public function cancelMenuEventListener() : void
+		{
+			m_menu.removeEventListener(MenuEvent.NEW, onNewHandler);
+			m_menu.removeEventListener(MenuEvent.OPEN, onOpenHandler);
+			m_menu.removeEventListener(MenuEvent.SAVE, onSaveHandler);
+			m_menu.removeEventListener(MenuEvent.SAVE_AS, onSaveAsHandler);
+			m_menu.removeEventListener(MenuEvent.UNDO, onUndoHandler);
+			m_menu.removeEventListener(MenuEvent.REDO, onRedoHandler);
+			m_menu.removeEventListener(MenuEvent.ABOUT, onAboutHandler);
 		}
 		
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +143,7 @@ package tools.point.mediator
 		 */
 		private function onAboutHandler(evt : MenuEvent) : void
 		{
-			var url : URLRequest = new URLRequest("http://t.qq.com/stefanie_kaka");
+			var url : URLRequest = new URLRequest("http://moggen-kaka.tumblr.com/");
 			navigateToURL(url, "_blank");
 		}
 		

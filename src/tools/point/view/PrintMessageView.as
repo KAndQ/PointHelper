@@ -3,6 +3,7 @@ package tools.point.view
 	import fl.controls.CheckBox;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import fl.events.ComponentEvent;
 	import fl.controls.TextInput;
 	import fl.controls.Label;
 	import fl.controls.ComboBox;
@@ -11,6 +12,7 @@ package tools.point.view
 	import tools.point.events.ChangeAnchorModeEvent;
 	import tools.point.events.ChangeDivideValueEvent;
 	import tools.point.events.ChangeRowAndColEvent;
+	import tools.point.events.MoveAnchorPointEvent;
 	import tools.point.utils.Metadata;
 	
 	/**
@@ -36,11 +38,11 @@ package tools.point.view
 			this.addChild(m_label1);
 			
 			m_txtRow = new TextInput();
-			m_txtRow.restrict = "0123456789";
+			m_txtRow.restrict = ".0123456789";
 			m_txtRow.text = "1";
 			m_txtRow.x = 32;
 			m_txtRow.width = 50;
-			m_txtRow.addEventListener(Event.CHANGE, onRowOrColValueChangeHandler);
+			m_txtRow.addEventListener(ComponentEvent.ENTER, onRowOrColValueChangeHandler);
 			this.addChild(m_txtRow);
 			
 			// Col
@@ -50,11 +52,11 @@ package tools.point.view
 			this.addChild(m_label2);
 			
 			m_txtCol = new TextInput();
-			m_txtCol.restrict = "0123456789";
+			m_txtCol.restrict = ".0123456789";
 			m_txtCol.text = "1";
 			m_txtCol.x = 112;
 			m_txtCol.width = 50;
-			m_txtCol.addEventListener(Event.CHANGE, onRowOrColValueChangeHandler);
+			m_txtCol.addEventListener(ComponentEvent.ENTER, onRowOrColValueChangeHandler);
 			this.addChild(m_txtCol);
 			
 			// Anchor Point CheckBox
@@ -99,8 +101,8 @@ package tools.point.view
 			
 			// Message area
 			m_txtMessage = new TextArea();
-			m_txtMessage.width = 800;
-			m_txtMessage.height = 268;
+			m_txtMessage.width = 300;
+			m_txtMessage.height = 150;
 			m_txtMessage.x = 180;
 			m_txtMessage.editable = false;
 			this.addChild(m_txtMessage); 
@@ -122,8 +124,8 @@ package tools.point.view
 			{
 				m_label1.text = "AX:";
 				m_label2.text = "AY:";
-				m_txtCol.editable = false;
-				m_txtRow.editable = false;
+				m_txtCol.editable = true;
+				m_txtRow.editable = true;
 				m_txtCol.text = data.anchorPoint.y.toString();
 				m_txtRow.text = data.anchorPoint.x.toString();
 			}
@@ -166,7 +168,7 @@ package tools.point.view
 						{
 							tmpPoint = new Point(p.x, p.y);
 						}
-						tmp = "{" + tmpPoint.x / divideValue + ", " + tmpPoint.y / divideValue + "},\n";
+						tmp = "{" + (tmpPoint.x / divideValue).toFixed(2) + ", " + (tmpPoint.y / divideValue).toFixed(2) + "},\n";
 						m_txtMessage.appendText(tmp);
 					}
 					m_txtMessage.appendText("\t}\n");
@@ -174,7 +176,7 @@ package tools.point.view
 				
 				if (i != rows - 1)
 				{
-					m_txtMessage.appendText("<-------------------------------------------- [行]分割线 -------------------------------------------->\n");
+					m_txtMessage.appendText("<------------------------ [行]分割线 ------------------------>\n");
 				}
 			}
 			m_txtMessage.appendText("}\n");
@@ -194,11 +196,20 @@ package tools.point.view
 			checkTextInput(m_txtRow);
 			checkTextInput(m_txtCol);
 			
-			var row : int = parseInt(m_txtRow.text);
-			var col : int = parseInt(m_txtCol.text);
-			
-			var changeRowAndColEvent : ChangeRowAndColEvent = new ChangeRowAndColEvent(ChangeRowAndColEvent.CHANGE_ROW_AND_COL, row, col);
-			this.dispatchEvent(changeRowAndColEvent);
+			if (!m_anchorModeCheckBox.selected)
+			{
+				var row : int = parseInt(m_txtRow.text);
+				var col : int = parseInt(m_txtCol.text);
+				var changeRowAndColEvent : ChangeRowAndColEvent = new ChangeRowAndColEvent(ChangeRowAndColEvent.CHANGE_ROW_AND_COL, row, col);
+				this.dispatchEvent(changeRowAndColEvent);
+			}
+			else
+			{
+				var x : Number = parseFloat(m_txtRow.text);
+				var y : Number = parseFloat(m_txtCol.text);
+				var changeAnchorPoint : MoveAnchorPointEvent = new MoveAnchorPointEvent(MoveAnchorPointEvent.MOVE_ANCHOR_POINT, new Point(x, y));
+				this.dispatchEvent(changeAnchorPoint);
+			}
 		}
 		
 		/**
@@ -223,8 +234,6 @@ package tools.point.view
 		 */
 		private function onDivideValueChangeHandler(evt : Event) : void
 		{
-			checkTextInput(m_txtDivideValue);
-			
 			var divideValue : Number = parseFloat(m_txtDivideValue.text);
 			var changeDivideValueEvt : ChangeDivideValueEvent = new ChangeDivideValueEvent(ChangeDivideValueEvent.CHANGE_DIVIDE_VALUE, divideValue);
 			this.dispatchEvent(changeDivideValueEvt);
@@ -249,11 +258,28 @@ package tools.point.view
 		 */
 		private function checkTextInput(txtInput : TextInput) : void
 		{
-			if (txtInput.text == ""
-				|| txtInput.text.charAt(0) == "0"
-				|| txtInput.text.charAt(0) == ".")
+			if (!m_anchorModeCheckBox.selected)
 			{
-				txtInput.text = "1";
+				if (txtInput.text == ""
+					|| txtInput.text.charAt(0) == "0"
+					|| txtInput.text.charAt(0) == ".")
+				{
+					txtInput.text = "1";
+				}
+			}
+			else
+			{
+				var num : Number = parseFloat(txtInput.text);
+				if (num < 0)
+				{
+					num = 0;
+					txtInput.text = num.toString();
+				}
+				else if (num > 1)
+				{
+					num = 1;
+					txtInput.text = num.toString();
+				}
 			}
 		}
 

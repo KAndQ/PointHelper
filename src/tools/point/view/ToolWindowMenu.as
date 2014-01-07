@@ -26,12 +26,12 @@ package tools.point.view
 		{
 			if (NativeApplication.supportsMenu) 
 			{
-				if (m_menu == null)
+				if (s_menu == null)
 				{
-					m_menu = new ToolWindowMenu();
+					s_menu = new ToolWindowMenu();
 				}
 				
-				return m_menu;
+				return s_menu;
 			}
 			else
 			{
@@ -39,7 +39,7 @@ package tools.point.view
 			}
 		}
 		
-		private static var m_menu : ToolWindowMenu = null;
+		private static var s_menu : ToolWindowMenu = null;
 
 		/**
 		 * 构造函数

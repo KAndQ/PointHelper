@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/3.1">
   <id>0</id>
-  <versionNumber>1.0.3</versionNumber>
+  <versionNumber>1.0.4</versionNumber>
   <filename>PointHelper</filename>
   <name>PointHelper</name>
   <initialWindow>
@@ -10,9 +10,9 @@
     <systemChrome>standard</systemChrome>
     <transparent>false</transparent>
     <visible>false</visible>
-    <minimizable>true</minimizable>
+    <minimizable>false</minimizable>
     <maximizable>false</maximizable>
-    <resizable>false</resizable>
+    <resizable>true</resizable>
   </initialWindow>
   <!-- 
 	More options:
@@ -30,10 +30,8 @@
     <image512x512>icons/坐标点选取工具512.png</image512x512>
   </icon>
   <supportedProfiles>desktop</supportedProfiles>
-  <description>这是个类似VertexHelper的工具, 感谢VertexHelper作者.
-Mac 环境下仍然存在 Bugs. </description>
-  <versionLabel>1.0.3</versionLabel>
-  <copyright>Copyright 2013, Zhenyu Yao All rights reserved.</copyright>
+  <versionLabel>1.0.4</versionLabel>
+  <copyright>Copyright 2014, Zhenyu Yao All rights reserved.</copyright>
   <fileTypes>
     <fileType>
       <name>Metadata</name>

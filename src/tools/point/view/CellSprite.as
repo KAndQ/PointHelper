@@ -65,6 +65,28 @@ package tools.point.view
 			linkPoints();
 		}
 		
+		/**
+		 * 根据 Index 得到对应的 Point 
+		 * @param	index 索引
+		 * @return 对应的 Point
+		 */
+		public function pointWithIndex(index : uint) : Point
+		{
+			return new Point(m_points[index].x, m_points[index].y);
+		}
+		
+		/**
+		 * 获得最新添加的 Point
+		 * @return 最新添加的 Point, 如果没有则返回 null
+		 */
+		public function lastPoint() : Point
+		{
+			if (m_points.length == 0)
+				return new Point();
+			
+			return new Point(m_points[m_points.length - 1].x, m_points[m_points.length - 1].y);
+		}
+		
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Private Functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////

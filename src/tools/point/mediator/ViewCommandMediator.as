@@ -44,6 +44,7 @@ package tools.point.mediator
 			m_pictureView.addEventListener(GeneratePointsForGridsEvent.GENERATE_POINTS_FOR_GRIDS, onGeneratePointsForGridsHandler);
 			m_pictureView.addEventListener(MoveAnchorPointEvent.MOVE_ANCHOR_POINT, onMoveAnchorPointHandler);
 			m_pictureView.addEventListener(MoveAnchorPointEvent.CONFIRM_ANCHOR_POINT, onMoveAnchorPointHandler);
+			m_messageView.addEventListener(MoveAnchorPointEvent.MOVE_ANCHOR_POINT, onMoveAnchorPointHandler);
 			m_messageView.addEventListener(ChangeRowAndColEvent.CHANGE_ROW_AND_COL, onChangeRowAndColHandler);
 			m_messageView.addEventListener(ChangeDivideValueEvent.CHANGE_DIVIDE_VALUE, onChangeDivideValueHandler);
 			m_messageView.addEventListener(ChangeAnchorModeEvent.CHANGE_ANCHOR_MODE, onChangeAnchorModeHandler);
@@ -107,6 +108,11 @@ package tools.point.mediator
 			
 			m_commandManager.currentMetadata.anchorPoint = evt.anchorPoint;
 			m_messageView.printData(m_commandManager.currentMetadata);
+			
+			if (evt.target == m_messageView)
+			{
+				m_pictureView.updateAnchorPoint(m_commandManager.currentMetadata);
+			}
 		}
 		
 		/**

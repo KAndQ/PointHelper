@@ -8,6 +8,7 @@ package tools.point.view
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
 	import flash.events.NativeDragEvent;
 	import flash.filesystem.File;
 	import flash.geom.Point;
@@ -89,7 +90,7 @@ package tools.point.view
 			m_background = new Sprite();
 			m_background.graphics.beginFill(0xbfbfbf);
 			m_frameSize = WindowDefaultOptions.defaultWindowSize;
-			m_frameSize.y *= 0.5;
+			m_frameSize.y *= 0.7;
 			m_background.graphics.drawRect(0, 0, m_frameSize.x, m_frameSize.y);
 			m_background.graphics.endFill();
 			this.addChild(m_background);
@@ -166,6 +167,59 @@ package tools.point.view
 			addPointToCell(p, row, col);
 			var addPointEvt : AddPointEvent = new AddPointEvent(AddPointEvent.ADD_POINT, p, row, col);
 			this.dispatchEvent(addPointEvt);
+		}
+		
+		/**
+		 * 根据坐标点向格子中添加对象
+		 * @param	local 格子中的点
+		 */
+		public function addPointWithLocal(local : Point) : void
+		{
+			// 首先计算出, 点击位置的所属网格
+			var row : int = (local.y - m_picture.y) / m_cellHeight;
+			var col : int = (local.x - m_picture.x) / m_cellWidth;
+			
+			if (row >= m_cellContainers.length || col >= m_cellContainers[0].length)
+			{
+				return;
+			}
+			
+			// 得到当前点击所属网格的中心点
+			var cellSprite : CellSprite = m_cellContainers[row][col];
+			var localCenter : Point = new Point(cellSprite.x, cellSprite.y);
+			
+			// 计算添加点的位置
+			var lastPoint : Point = cellSprite.lastPoint();
+			var pointInCell : Point = null;
+			if (lastPoint != null)
+			{
+				// 针对按住 shift 键的处理, 按住 shift 键能够垂直/水平绘制
+				if (m_shift)
+				{
+					var fix : Number = 45;
+					var angle : Number = Math.atan2(local.y - lastPoint.y, local.x - lastPoint.x) / Math.PI * 180;
+					if ((angle > -fix && angle < fix)
+					|| (angle > 180 - fix || angle < -180 + fix))
+					{
+						pointInCell = new Point(local.x, lastPoint.y);
+					}
+					else if ((angle > 90 - fix && angle < 90 + fix)
+					|| (angle > -90 - fix && angle < -90 + fix))
+					{
+						pointInCell = new Point(lastPoint.x, local.y);
+					}
+				}
+				else
+				{
+					pointInCell = new Point(local.x - localCenter.x, local.y - localCenter.y);
+				}
+			}
+			else
+			{
+				pointInCell = new Point(local.x - localCenter.x, local.y - localCenter.y);
+			}
+			
+			addPoint(pointInCell, row, col);
 		}
 		
 		/**
@@ -274,6 +328,8 @@ package tools.point.view
 		{
 			this.stage.addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onNativeDragEnterHandler);
 			this.stage.addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onNativeDragDropHandler);
+			this.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyEventHandle);
+			this.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyEventHandle);
 		}
 		
 		/**
@@ -321,36 +377,6 @@ package tools.point.view
 			var ldrInfo : LoaderInfo = evt.target as LoaderInfo;
 			addImage(ldrInfo.content as Bitmap);
 		}
-
-		/**
-		 * 在装载图片的容器内单机鼠标事件
-		 * @param	evt 鼠标事件
-		 * @author Zhenyu Yao
-		 */
-		private function onMouseClickHandler(evt : MouseEvent) : void
-		{
-			if (!m_editMode || m_container == null)
-			{
-				return;
-			}
-			
-			// 首先计算出, 点击位置的所属网格
-			var local : Point = new Point(evt.localX, evt.localY);
-			var row : int = (local.y - m_picture.y) / m_cellHeight;
-			var col : int = (local.x - m_picture.x) / m_cellWidth;
-			
-			if (row >= m_cellContainers.length || col >= m_cellContainers[0].length)
-			{
-				return;
-			}
-			
-			// 得到当前点击所属网格的中心点
-			var cellSprite : CellSprite = m_cellContainers[row][col];
-			var localCenter : Point = new Point(cellSprite.x, cellSprite.y);
-			var pointInCell : Point = new Point(local.x - localCenter.x, local.y - localCenter.y);
-			
-			addPoint(pointInCell, row, col);
-		}
 		
 		/**
 		 * 装载图片的容器内鼠标按下事件
@@ -378,6 +404,16 @@ package tools.point.view
 					}
 				}
 			}
+			else
+			{
+				if (m_editMode && m_selectRect != null && m_ctrl)
+				{
+					m_selectRect.visible = true;
+					m_selectRect.x = m_container.mouseX;
+					m_selectRect.y = m_container.mouseY;
+					m_selectRect.updateRect(new Point(m_container.mouseX, m_container.mouseY));
+				}
+			}
 		}
 		
 		/**
@@ -389,6 +425,35 @@ package tools.point.view
 		{
 			m_container.stopDrag();
 			m_anchorSprite.stopDrag();
+			
+			if (m_editMode && m_container != null)
+			{
+				if (!m_selectRect.visible)
+				{
+					addPointWithLocal(new Point(evt.localX, evt.localY));
+				}
+				else 
+				{
+					m_selectRect.visible = false;
+					for each (var point : Point in m_selectRect.points)
+					{
+						addPointWithLocal(point);
+					}
+				}
+			}
+		}
+		
+		/**
+		 * 鼠标移动事件
+		 * @param	evt MouseEvent 对象
+		 */
+		private function onMouseMoveHandler(evt : MouseEvent) : void
+		{
+			if (m_editMode && m_selectRect != null && m_selectRect.visible)
+			{
+				trace("mouse point: " + m_container.mouseX + ", " + m_container.mouseY);
+				m_selectRect.updateRect(new Point(m_container.mouseX, m_container.mouseY));
+			}
 		}
 		
 		/**
@@ -472,9 +537,9 @@ package tools.point.view
 			m_container.x = m_frameSize.x * 0.5;
 			m_container.y = m_frameSize.y * 0.5;
 			this.addChild(m_container);
-			m_container.addEventListener(MouseEvent.CLICK, onMouseClickHandler);
 			m_container.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDownHandler);
 			m_container.addEventListener(MouseEvent.MOUSE_UP, onMouseUpHandler);
+			m_container.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMoveHandler);
 			m_container.addEventListener(Event.ENTER_FRAME, onEnterFrameHandler);
 			
 			resetRowAndCol(1, 1);
@@ -482,6 +547,10 @@ package tools.point.view
 			m_anchorSprite = new AnchorPointSprite();
 			m_anchorSprite.visible = false;
 			m_container.addChild(m_anchorSprite);
+			
+			m_selectRect = new SelectRect();
+			m_selectRect.visible = false;
+			m_container.addChild(m_selectRect);
 		}
 
 		/**
@@ -517,6 +586,19 @@ package tools.point.view
 			return anchorPoint;
 		}
 		
+		/**
+		 * 相应键盘事件
+		 * @param	evt 键盘事件
+		 */
+		private function onKeyEventHandle(evt : KeyboardEvent) : void
+		{
+			if (m_editMode && m_picture != null)
+			{
+				m_shift = evt.shiftKey;
+				m_ctrl = evt.ctrlKey;
+			}
+		}
+		
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Private vars
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -530,6 +612,9 @@ package tools.point.view
 		private var m_cellContainers : Vector.<Vector.<CellSprite>> = null;
 		private var m_editMode : Boolean = false;
 		private var m_anchorSprite : AnchorPointSprite = null;
+		private var m_selectRect : SelectRect = null;
+		private var m_shift : Boolean = false;
+		private var m_ctrl : Boolean = false;
 	}
 
 }
